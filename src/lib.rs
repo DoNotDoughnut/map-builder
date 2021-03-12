@@ -58,14 +58,19 @@ pub fn load_maps_v1(map_dir: &str, tile_texture_dir: &str, chunk_map: &mut World
                     Ok(world_dir) => {
                         let world_dir = world_dir.path();
                         println!("Dir: {:?}", world_dir);
-                        for file in std::fs::read_dir(&world_dir).unwrap().filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()) {
-                            if let Some(ext) = file.extension() {
-                                if ext == std::ffi::OsString::from("toml") {
-                                    let (cm, ms) = load_map(&palette_sizes, &world_dir, &file);
-                                    if let Some(world_chunk) = cm {
-                                        chunk_map.chunks.insert(world_chunk.0, world_chunk.1);
-                                    } else if let Some(map_set) = ms {
-                                        map_set_manager.map_sets.insert(map_set.0, map_set.1);
+                        if let Ok(dir) = std::fs::read_dir(&world_dir) {
+                            for entry in dir {
+                                if let Ok(entry) = entry {
+                                    let file = entry.path();
+                                    if let Some(ext) = file.extension() {
+                                        if ext == std::ffi::OsString::from("toml") {
+                                            let (cm, ms) = load_map(&palette_sizes, &world_dir, &file);
+                                            if let Some(world_chunk) = cm {
+                                                chunk_map.chunks.insert(world_chunk.0, world_chunk.1);
+                                            } else if let Some(map_set) = ms {
+                                                map_set_manager.map_sets.insert(map_set.0, map_set.1);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -107,7 +112,6 @@ pub fn new_world_from_v1(gba_map: gba_map::GbaMap, config: &map_serializable::Ma
 }
 
 fn load_map(palette_sizes: &HashMap<u8, u16>, root_path: &PathBuf, file: &PathBuf) -> (Option<(u16, WorldChunk)>, Option<(String, WorldMapSet)>) {
-
     match std::fs::read_to_string(file) {
         Ok(data) => {
             match self::map_serializable::MapConfig::from_string(&data) {
@@ -171,23 +175,26 @@ pub fn load_npc_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec<NP
 
 fn get_npc_from_directory(npcs: &mut Vec<NPC>, dir: PathBuf) {
     if let Ok(dir) = std::fs::read_dir(dir) {
-        for filepath in dir.filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()) {
-            match std::fs::read_to_string(&filepath) {
-                Ok(data) => {
-                    let npc_result: Result<NPC, ron::Error> = ron::from_str(&data);
-                    match npc_result {
-                        Ok(npc) => {
-                            println!("Loaded NPC {}", &npc.identifier.name);
-                            npcs.push(npc);
-                        },
-                        Err(err) => {
-                            eprintln!("Could not parse NPC .ron at {:?} with error {}", &filepath, err);
-                        },
-                    }
-                },
-                Err(err) => {
-                    eprintln!("Could not get NPC json at {:?} with error {}", &filepath, err);
-                },
+        for entry in dir {
+            if let Ok(entry) = entry {
+                let file = entry.path();
+                match std::fs::read_to_string(&file) {
+                    Ok(data) => {
+                        let npc_result: Result<NPC, ron::Error> = ron::from_str(&data);
+                        match npc_result {
+                            Ok(npc) => {
+                                println!("Loaded NPC {}", &npc.identifier.name);
+                                npcs.push(npc);
+                            },
+                            Err(err) => {
+                                eprintln!("Could not parse NPC .ron at {:?} with error {}", file, err);
+                            },
+                        }
+                    },
+                    Err(err) => {
+                        eprintln!("Could not get NPC json at {:?} with error {}", file, err);
+                    },
+                }
             }
         }
     }    
@@ -205,23 +212,26 @@ pub fn load_warp_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec<W
 
 fn add_warp_under_directory(warps: &mut Vec<WarpEntry>, dir: PathBuf) {
     if let Ok(dir) = std::fs::read_dir(dir) {
-        for file in dir.filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()) {
-            match std::fs::read_to_string(&file) {
-                Ok(data) => {
-                    match toml::from_str(&data) {
-                        Ok(warp_entry) => {
-                            warps.push(warp_entry);
+        for entry in dir {
+            if let Ok(entry) = entry {
+                let file = entry.path();
+                match std::fs::read_to_string(&file) {
+                    Ok(data) => {
+                        match toml::from_str(&data) {
+                            Ok(warp_entry) => {
+                                warps.push(warp_entry);
+                            }
+                            Err(err) => {
+                                eprintln!("Could not parse warp entry at {:?} with error {}", &file, err);
+                            }
                         }
-                        Err(err) => {
-                            eprintln!("Could not parse warp entry at {:?} with error {}", &file, err);
-                        }
+    
+                    },
+                    Err(err) => {
+                        eprintln!("Could not read warp entry toml at {:?} to string with error {}", &file, err);
                     }
-
-                },
-                Err(err) => {
-                    eprintln!("Could not read warp entry toml at {:?} to string with error {}", &file, err);
                 }
-            }
+            } 
         }
     }
 }
@@ -274,19 +284,22 @@ pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec
         script_dir = script_dir.join(format!("map_{}", index));
     }
     if let Ok(dir) = std::fs::read_dir(script_dir) {
-        for file in dir.filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()) {
-            match std::fs::read_to_string(&file) {
-                Ok(content) => {
-                    let script: Result<WorldScript, ron::Error> = ron::from_str(&content);
-                    match script {
-                        Ok(script) => scripts.push(script),
-                        Err(err) => {
-                            eprintln!("Could not parse script at {:?} with error {}", file, err);
+        for entry in dir {
+            if let Ok(entry) = entry {
+                let file = entry.path();
+                match std::fs::read_to_string(&file) {
+                    Ok(content) => {
+                        let script: Result<WorldScript, ron::Error> = ron::from_str(&content);
+                        match script {
+                            Ok(script) => scripts.push(script),
+                            Err(err) => {
+                                eprintln!("Could not parse script at {:?} with error {}", file, err);
+                            }
                         }
+                    },
+                    Err(err) => {
+                        eprintln!("Could not get script entry at {:?} as string with error {}", file, err);
                     }
-                },
-                Err(err) => {
-                    eprintln!("Could not get script entry at {:?} as string with error {}", file, err);
                 }
             }
         }
