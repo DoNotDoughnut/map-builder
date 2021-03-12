@@ -19,11 +19,6 @@ pub mod map_set_loader;
 pub mod map_serializable;
 pub mod gba_map;
 
-// fn main() -> Result<(), Box<dyn std::error::Error>> {
-//     with_dirs("world/maps", "world/textures/tiles")?;
-//     Ok(())
-// }
-
 pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut chunk_map = WorldChunkMap::new();
@@ -278,12 +273,16 @@ pub fn load_wild_entry(root_path: &PathBuf, wild: Option<map_serializable::Seria
 }
 
 pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec<WorldScript> {
+    println!("Loading scripts...");
     let mut scripts = Vec::new();
     let mut script_dir = root_path.join("scripts");
     if let Some(index) = map_index {
         script_dir = script_dir.join(format!("map_{}", index));
     }
-    if let Ok(dir) = std::fs::read_dir(script_dir) {
+    if let Ok(dir) = std::fs::read_dir(&script_dir) {
+        if let Some(usize) = dir.size_hint().1 {
+            println!("There are 0 scripts in {:?}", &script_dir);
+        }
         for entry in dir {
             if let Ok(entry) = entry {
                 let file = entry.path();
@@ -291,7 +290,10 @@ pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec
                     Ok(content) => {
                         let script: Result<WorldScript, ron::Error> = ron::from_str(&content);
                         match script {
-                            Ok(script) => scripts.push(script),
+                            Ok(script) => {
+                                println!("Loaded script at path {:?}", file);
+                                scripts.push(script)
+                            },
                             Err(err) => {
                                 eprintln!("Could not parse script at {:?} with error {}", file, err);
                             }
@@ -304,5 +306,6 @@ pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec
             }
         }
     }
+    println!("Done loading scripts");
     scripts
 }

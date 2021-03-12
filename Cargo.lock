@@ -480,7 +480,7 @@ dependencies = [
 [[package]]
 name = "firecore-audio"
 version = "0.0.1-alpha.1"
-source = "git+https://github.com/DoNotDoughnut/firecore-audio#fdf926f35df70919747119e3831ef6b258021735"
+source = "git+https://github.com/DoNotDoughnut/firecore-audio#bb83d33fbb92cfadca26b92207f7866bcf850e0c"
 dependencies = [
  "dashmap",
  "kira",
@@ -495,7 +495,7 @@ dependencies = [
 [[package]]
 name = "firecore-pokedex"
 version = "0.1.1"
-source = "git+https://github.com/DoNotDoughnut/firecore-pokedex#73bea608e3d7828fe418f3d2190fcd2cc13ade59"
+source = "git+https://github.com/DoNotDoughnut/firecore-pokedex#98b122ca874a7261f4db9cdee5dcaaa51f0c4f33"
 dependencies = [
  "dashmap",
  "lazy_static",
@@ -516,7 +516,7 @@ dependencies = [
 [[package]]
 name = "firecore-world"
 version = "0.1.0"
-source = "git+https://github.com/DoNotDoughnut/firecore-world#68daa927c6440b1f230e83838f2426120b55f480"
+source = "git+https://github.com/DoNotDoughnut/firecore-world#1a655c21a52e1745e40917685f209f2f52416590"
 dependencies = [
  "ahash 0.7.2",
  "firecore-audio",
@@ -1284,18 +1284,18 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.4.3"
+version = "1.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9251239e129e16308e70d853559389de218ac275b515068abc96829d05b948a"
+checksum = "54fd1046a3107eb58f42de31d656fee6853e5d276c455fd943742dce89fc3dd3"
 dependencies = [
  "regex-syntax",
 ]
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.22"
+version = "0.6.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
+checksum = "24d5f089152e60f62d28b835fbff2cd2e8dc0baf1ac13343bef92ab7eed84548"
 
 [[package]]
 name = "ring"
