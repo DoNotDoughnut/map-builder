@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::io::Write;
 use std::path::PathBuf;
 use firecore_world::npc::NPC;
@@ -90,7 +91,7 @@ pub fn load_maps_v1(map_dir: &str, tile_texture_dir: &str, chunk_map: &mut World
 pub fn new_world_from_v1(gba_map: gba_map::GbaMap, config: &map_serializable::MapConfig, root_path: &PathBuf, map_index: Option<usize>) -> WorldMap {
     WorldMap {
         name: config.identifier.name.clone(),
-        music: firecore_audio::music::Music::from(gba_map.music),
+        music: firecore_util::music::Music::try_from(gba_map.music).unwrap_or_default(),
         width: gba_map.width,
         height: gba_map.height,
         tile_map: gba_map.tile_map,
@@ -280,9 +281,6 @@ pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec
         script_dir = script_dir.join(format!("map_{}", index));
     }
     if let Ok(dir) = std::fs::read_dir(&script_dir) {
-        if let Some(usize) = dir.size_hint().1 {
-            println!("There are 0 scripts in {:?}", &script_dir);
-        }
         for entry in dir {
             if let Ok(entry) = entry {
                 let file = entry.path();

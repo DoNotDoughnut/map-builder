@@ -1,6 +1,6 @@
 [package]
-name = "map-compressor"
-version = "0.1.0"
+name = "map-builder"
+version = "0.1.1"
 authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
 edition = "2018"
 
@@ -22,7 +22,6 @@ ron = "0.6"
 # Other
 
 ahash = { version = "0.7", features = ["serde"] }
-firecore-audio = { git = "https://github.com/DoNotDoughnut/firecore-audio" }
 firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
 macroquad = { git = "https://github.com/not-fl3/macroquad" }
 image = { version = "0.23.12", default-features = false, features = ["png", "tga"] }
