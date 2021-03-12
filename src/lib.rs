@@ -24,20 +24,24 @@ pub mod gba_map;
 //     Ok(())
 // }
 
-pub fn with_dirs(map_dir: &str, tile_texture_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+
     let mut chunk_map = WorldChunkMap::new();
     let mut map_set_manager = WorldMapSetManager::default();
     load_maps_v1(map_dir, tile_texture_dir, &mut chunk_map, &mut map_set_manager);
+
     println!("Saving chunk map...");
     let bytes = bincode::serialize(&chunk_map)?;
-    let mut file = std::fs::File::create("chunks.bin")?;
+    let mut file = std::fs::File::create(PathBuf::from(output_dir).join("chunks.bin"))?;
     let bytes = file.write(&bytes)?;
     println!("Wrote {} bytes to chunk map file!", bytes);
+
     println!("Saving map sets...");
     let bytes = bincode::serialize(&map_set_manager)?;
-    let mut file = std::fs::File::create("mapsets.bin")?;
+    let mut file = std::fs::File::create(PathBuf::from(output_dir).join("mapsets.bin"))?;
     let bytes = file.write(&bytes)?;
     println!("Wrote {} bytes to map set manager file!", bytes);
+    
     Ok(())
 }
 
