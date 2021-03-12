@@ -19,10 +19,10 @@ pub mod map_set_loader;
 pub mod map_serializable;
 pub mod gba_map;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    with_dirs("world/maps", "world/textures/tiles")?;
-    Ok(())
-}
+// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//     with_dirs("world/maps", "world/textures/tiles")?;
+//     Ok(())
+// }
 
 pub fn with_dirs(map_dir: &str, tile_texture_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut chunk_map = WorldChunkMap::new();
