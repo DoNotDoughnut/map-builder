@@ -2,8 +2,8 @@ use std::convert::TryFrom;
 use std::io::Write;
 use std::path::PathBuf;
 use firecore_world::npc::NPC;
-use firecore_world::pokemon::WildEntry;
-use firecore_world::pokemon::wild_pokemon_table::WildPokemonTable;
+use firecore_world::wild::WildEntry;
+use firecore_world::wild::table::WildPokemonTable;
 use firecore_world::warp::WarpEntry;
 use ahash::AHashMap as HashMap;
 
@@ -99,6 +99,7 @@ pub fn new_world_from_v1(gba_map: gba_map::GbaMap, config: &map_serializable::Ma
         movement_map: gba_map.movement_map,
         fly_position: config.settings.fly_position,
         wild: load_wild_entry(root_path, config.wild.clone(), map_index),
+        objects: HashMap::new(),
         warps: load_warp_entries(root_path, map_index),
         npcs: load_npc_entries(root_path, map_index),
         scripts: load_script_entries(root_path, map_index),
