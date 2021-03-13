@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use ahash::AHashMap as HashMap;
-use macroquad::prelude::Image;
+use crate::image::Image;
 
 pub struct GbaMap {
 	

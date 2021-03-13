@@ -19,6 +19,7 @@ pub mod map_set_loader;
 
 pub mod map_serializable;
 pub mod gba_map;
+pub mod image;
 
 pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
 
@@ -42,7 +43,7 @@ pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, output_dir: &str) -> Res
 }
 
 pub fn load_maps_v1(map_dir: &str, tile_texture_dir: &str, chunk_map: &mut WorldChunkMap, map_set_manager: &mut WorldMapSetManager) {
-    let mut bottom_sheets: HashMap<u8, macroquad::prelude::Image> = HashMap::new();
+    let mut bottom_sheets: HashMap<u8, crate::image::Image> = HashMap::new();
     let palette_sizes = gba_map::fill_palette_map(tile_texture_dir, &mut bottom_sheets);
 
     println!("Loading maps...");

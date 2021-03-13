@@ -23,6 +23,5 @@ ron = "0.6"
 
 ahash = { version = "0.7", features = ["serde"] }
 firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
-macroquad = { git = "https://github.com/not-fl3/macroquad" }
 image = { version = "0.23.12", default-features = false, features = ["png", "tga"] }
 smallvec = { version = "1.6", features = ["serde"] }
