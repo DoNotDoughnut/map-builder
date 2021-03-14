@@ -43,10 +43,10 @@ pub fn get_gba_map(file: Vec<u8>) -> GbaMap  {
 		
 	}
 	
-	let mut tile_map: Vec<u16> = Vec::new();
-	let mut movement_map: Vec<u8> = Vec::new();
-	
 	let size = width as usize * height as usize;
+	
+	let mut tile_map: Vec<u16> = Vec::with_capacity(size);
+	let mut movement_map: Vec<u8> = Vec::with_capacity(size);
 	
 	for x in 0..size {
 		
@@ -131,8 +131,9 @@ pub fn get_offset(gba_map: &GbaMap, palette_sizes: &HashMap<u8, u16>) -> u16 { /
 	return offset;
 }
 
-pub fn fill_palette_map(tile_texture_dir: &str, bottom_sheets: &mut HashMap<u8, Image>/*, top_sheets: &mut HashMap<u8, RgbaImage>*/) -> HashMap<u8, u16> {
-	let mut sizes: HashMap<u8, u16> = HashMap::new();
+pub fn fill_palette_map(tile_texture_dir: &str) -> (HashMap<u8, u16>, HashMap<u8, Vec<u8>>) {
+	let mut sizes = HashMap::new();
+	let mut palettes = HashMap::new();
 
 	if let Ok(dir) = std::fs::read_dir(tile_texture_dir) {
 		let paths: Vec<PathBuf> = dir.filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()).collect();
@@ -146,7 +147,7 @@ pub fn fill_palette_map(tile_texture_dir: &str, bottom_sheets: &mut HashMap<u8, 
 							    Ok(bytes) => {
 									let img = Image::from_file_with_format(&bytes, Some(image::ImageFormat::Png));
 									sizes.insert(index, ((img.width() >> 4) * (img.height() >> 4)) as u16);
-									bottom_sheets.insert(index, img);
+									palettes.insert(index, bytes);
 								}
 							    Err(err) => {
 									eprintln!("Could not read image at path {:?} with error {}", filepath, err);
@@ -162,7 +163,8 @@ pub fn fill_palette_map(tile_texture_dir: &str, bottom_sheets: &mut HashMap<u8, 
 		}
 	}
 
-	sizes
+	(sizes, palettes)
+
 }
 
 // pub fn get_texture(sheets: &HashMap<u8, Image>, palette_sizes: &HashMap<u8, u16>, tile_id: u16) -> Texture {

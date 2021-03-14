@@ -19,7 +19,7 @@ pub fn new_chunk_map(root_path: &PathBuf, palette_sizes: &HashMap<u8, u16>, conf
                             fix_tiles(&mut gba_map, palette_sizes);
     
                             if config.jigsaw_map.is_some() {
-                                let map = super::new_world_from_v1(
+                                let map = super::map::new_world_from_v1(
                                     gba_map, 
                                     &config, 
                                     root_path, 

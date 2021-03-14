@@ -1,6 +1,6 @@
 [package]
-name = "map-builder"
-version = "0.1.1"
+name = "world-builder"
+version = "0.2.0"
 authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
 edition = "2018"
 
