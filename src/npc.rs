@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use firecore_world::npc::NPC;
+use firecore_world::character::npc::NPC;
 
 pub fn load_npc_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec<NPC> {
     let mut npcs = Vec::new();
