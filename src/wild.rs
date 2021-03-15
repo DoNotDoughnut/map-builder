@@ -20,13 +20,12 @@ pub fn load_wild_entry(root_path: &PathBuf, wild: Option<super::map_serializable
                         match toml::from_str(&content) {
                             Ok(table) => table,
                             Err(err) => {
-                                eprintln!("Could not parse wild pokemon table at {:?} with error {}, using random table instead!", &file, err);
-                                WildPokemonTable::default()
+                                panic!("Could not parse wild pokemon table at {:?} with error {}", &file, err);
                             }
                         }
                     }
                     Err(err) => {
-                        eprintln!("Could not find wild toml file at {:?} with error {}!", file, err);
+                        eprintln!("Could not find wild toml file at {:?} with error {}", file, err);
                         WildPokemonTable::default()
                     }
                 }

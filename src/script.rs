@@ -22,7 +22,7 @@ pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec
                                 scripts.push(script)
                             },
                             Err(err) => {
-                                eprintln!("Could not parse script at {:?} with error {}", file, err);
+                                panic!("Could not parse script at {:?} with error {} at position {}", file, err, err.position);
                             }
                         }
                     },

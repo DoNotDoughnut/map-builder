@@ -14,20 +14,20 @@ pub mod map_serializable;
 pub mod gba_map;
 pub mod image;
 
-pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output_file: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub type ResultT<T> = Result<T, Box<dyn std::error::Error>>;
+
+pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output_file: &str) -> ResultT<()> {
 
     println!("Loading maps...");
-    let (chunks, map_sets, palettes) = map::load_maps(map_dir, tile_texture_dir);
+    let (chunks, map_sets, palettes) = map::load_maps(map_dir, tile_texture_dir)?;
     println!("Finished loading maps.");
 
     println!("Loading NPC types...");
-    let npc_types = npc_type::load_npc_types(npc_type_dir);
+    let npc_types = npc_type::load_npc_types(npc_type_dir)?;
 
     if let Some(parent) = Path::new(output_file).parent() {
         if !parent.exists() {
-            if let Err(err) = std::fs::create_dir_all(parent) {
-                eprintln!("Could not create directory for output file with error {}", err);
-            }
+            std::fs::create_dir_all(parent)?;
         }
     }
     
