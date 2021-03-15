@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use firecore_world::script::WorldScript;
+use firecore_world::script::world::WorldScript;
 
 pub fn load_script_entries(root_path: &PathBuf, map_index: Option<usize>) -> Vec<WorldScript> {
     println!("Loading scripts...");

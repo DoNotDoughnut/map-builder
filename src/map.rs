@@ -15,6 +15,7 @@ pub fn load_maps(map_dir: &str, tile_texture_dir: &str) -> ResultT<(WorldChunkMa
     let mut chunk_map = WorldChunkMap::new();
     let mut map_set_manager = WorldMapSetManager::default();
     let (palette_sizes, palettes) = gba_map::fill_palette_map(tile_texture_dir);
+    println!("Loaded {} palettes", palette_sizes.len());
 
     println!("Loading maps...");
     for world_dir in std::fs::read_dir(map_dir)? {

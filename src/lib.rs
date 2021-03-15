@@ -18,9 +18,9 @@ pub type ResultT<T> = Result<T, Box<dyn std::error::Error>>;
 
 pub fn with_dirs(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output_file: &str) -> ResultT<()> {
 
-    println!("Loading maps...");
+    println!("Started loading maps and tile textures...");
     let (chunks, map_sets, palettes) = map::load_maps(map_dir, tile_texture_dir)?;
-    println!("Finished loading maps.");
+    println!("Finished loading maps and tile textures.");
 
     println!("Loading NPC types...");
     let npc_types = npc_type::load_npc_types(npc_type_dir)?;
