@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::path::PathBuf;
 use crate::ResultT;
 
@@ -82,7 +81,7 @@ fn load_map(palette_sizes: &HashMap<u8, u16>, root_path: &PathBuf, file: &PathBu
 pub fn new_world_from_v1(gba_map: gba_map::GbaMap, config: &super::map_serializable::MapConfig, root_path: &PathBuf, map_index: Option<usize>) -> ResultT<WorldMap> {
     Ok(WorldMap {
         name: config.identifier.name.clone(),
-        music: firecore_util::music::Music::try_from(gba_map.music).unwrap_or_default(),
+        music: gba_map.music,
         width: gba_map.width,
         height: gba_map.height,
         tile_map: gba_map.tile_map,
