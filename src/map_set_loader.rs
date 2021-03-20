@@ -1,42 +1,43 @@
 use std::path::PathBuf;
 
-use firecore_world::map::WorldMap;
 use firecore_world::map::set::WorldMapSet;
 use ahash::AHashMap as HashMap;
-use super::gba_map::fix_tiles;
-use super::gba_map::get_gba_map;
+use crate::map_serializable::SerializedMapSet;
 
-pub fn new_map_set(root_path: &PathBuf, palette_sizes: &HashMap<u8, u16>, config: super::map_serializable::MapConfig) -> crate::ResultT<(String, WorldMapSet)> {
-    
-    println!("Loading map set {}", &config.identifier.name);
+pub fn load_map_set(root_path: &PathBuf, palette_sizes: &HashMap<u8, u16>, serialized_map_set: SerializedMapSet) -> crate::ResultT<(String, WorldMapSet)> {
 
-    if config.identifier.map_files.len() == 0 {
-        return Err(Box::new(super::map::MapError::NoMaps))
+    println!("Loading map set {}", serialized_map_set.identifier);
+
+    let mut maps = Vec::new();
+
+    for dir_string in serialized_map_set.dirs {
+        let map_path = root_path.join(dir_string);
+        for dir_entry in std::fs::read_dir(&map_path)? {
+            let file = dir_entry?.path();
+            if let Some(ext) = file.extension() {
+                if ext == std::ffi::OsString::from("ron") {
+                    let config = ron::from_str(
+                        &std::fs::read_to_string(file)?
+                    )?;
+                    maps.push(
+                        super::map::load_map_from_config(&map_path, palette_sizes, config)?
+                    );
+                }
+            }
+        }
+
+        
+        
     }
 
-    let mut maps: Vec<WorldMap> = Vec::with_capacity(config.identifier.map_files.len());
+    Ok(
+        (
+            serialized_map_set.identifier,
+            WorldMapSet {
+                maps,
+                ..Default::default()
+            }
+        )
+    )
 
-    for index in 0..config.identifier.map_files.len() {
-
-        let file = std::fs::read(root_path.join(&config.identifier.map_files[index]))?;
-        let mut gba_map = get_gba_map(file);
-        fix_tiles(&mut gba_map, palette_sizes);
-
-        maps.insert(
-            index,
-            super::map::new_world_from_v1(
-                gba_map, 
-                &config, 
-                root_path, 
-                Some(index)
-            )?
-        );
-    }
-
-    let wm = config.warp_map.unwrap();
-
-    return Ok((
-        wm.map_set_id.clone(),
-        WorldMapSet::new(wm.map_set_id, maps),
-    ));
 }

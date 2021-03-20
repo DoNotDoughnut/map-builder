@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 
 use ahash::AHashMap as HashMap;
-use crate::image::Image;
+use image::GenericImageView;
+// use crate::image::Image;
 
 pub struct GbaMap {
 	
@@ -145,17 +146,17 @@ pub fn fill_palette_map(tile_texture_dir: &str) -> (HashMap<u8, u16>, HashMap<u8
 						Ok(index) => {
 							match std::fs::read(&filepath) {
 							    Ok(bytes) => {
-									let img = Image::from_file_with_format(&bytes, Some(image::ImageFormat::Png));
+									let img = image::load_from_memory_with_format(&bytes, image::ImageFormat::Png).unwrap();
 									sizes.insert(index, ((img.width() >> 4) * (img.height() >> 4)) as u16);
 									palettes.insert(index, bytes);
 								}
 							    Err(err) => {
-									eprintln!("Could not read image at path {:?} with error {}", filepath, err);
+									panic!("Could not read image at path {:?} with error {}", filepath, err);
 								}
 							}
 						}
 						Err(err) => {
-							eprintln!("Could not parse tile palette named {} with error {}", filename, err);
+							panic!("Could not parse tile palette named {} with error {}", filename, err);
 						}
 					}
 				}
@@ -166,29 +167,3 @@ pub fn fill_palette_map(tile_texture_dir: &str) -> (HashMap<u8, u16>, HashMap<u8
 	(sizes, palettes)
 
 }
-
-// pub fn get_texture(sheets: &HashMap<u8, Image>, palette_sizes: &HashMap<u8, u16>, tile_id: u16) -> Texture {
-	
-// 	let mut count: u16 = *palette_sizes.get(&0).unwrap();
-// 	let mut index: u8 = 0;
-
-// 	while tile_id >= count {
-// 		index += 1;
-// 		if index >= (palette_sizes.len() as u8) {
-// 			warn!("Tile ID {} exceeds palette texture count!", tile_id);
-// 			break;
-// 		}
-// 		count += *palette_sizes.get(&index).unwrap();
-// 	}
-
-// 	match sheets.get(&index) {
-// 		Some(sheet) => {
-// 			return crate::util::graphics::texture::image_texture(&crate::util::image::get_subimage(sheet, (tile_id - (count - *palette_sizes.get(&index).unwrap())) as usize));
-// 		}
-// 		None => {
-// 			debug!("Could not get texture for tile ID {}", &tile_id);
-// 			return crate::util::graphics::texture::debug_texture();
-// 		}
-// 	}
-    
-// }

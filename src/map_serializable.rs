@@ -3,12 +3,18 @@ use serde::Deserialize;
 use firecore_util::Coordinate;
 
 #[derive(Deserialize)]
+pub struct SerializedMap {
+
+    pub chunk: Option<SerializedChunkMap>,
+    pub map_set: Option<SerializedMapSet>,
+
+}
+
+#[derive(Deserialize)]
 pub struct MapConfig {
 
-    pub identifier: MapIdentifier,
-
-    pub jigsaw_map: Option<SerializedChunkMap>,
-    pub warp_map: Option<SerializedMapSet>,
+    pub name: String,
+    pub file: String,
 
     #[serde(default)]
     pub settings: SerializedMapSettings,
@@ -16,56 +22,38 @@ pub struct MapConfig {
 
 }
 
-impl MapConfig {
+#[derive(Deserialize)]
+pub struct SerializedChunkMap {
 
-    pub fn from_string(data: &str) -> Result<MapConfig, toml::de::Error> {
-        toml::from_str(data)
-    }
+    pub config: MapConfig,
+
+    pub piece_index: u16,
+    pub coords: Coordinate,
+    pub connections: smallvec::SmallVec<[u16; 6]>,
 
 }
 
 #[derive(Deserialize)]
-pub struct MapIdentifier {
+pub struct SerializedMapSet {
 
-    #[serde(default = "map_default_name")]
-    pub name: String,
-    pub map_files: Vec<String>,
+    pub identifier: String,
+    pub dirs: Vec<String>,
 
-}
-
-fn map_default_name() -> String {
-    "Map (Missing Name)".to_owned()
 }
 
 #[derive(Default, Deserialize)]
 pub struct SerializedMapSettings {
 
-    pub fly_position: Coordinate,
-    // pub draw_color: Option<[u8; 3]>,
-
-}
-
-#[derive(Clone, Deserialize)]
-pub struct SerializedChunkMap {
-
-    pub piece_index: u16,
-    pub x: isize,
-    pub y: isize,
-    pub connections: smallvec::SmallVec<[u16; 6]>,
-
-}
-
-#[derive(Clone, Deserialize)]
-pub struct SerializedMapSet {
-
-    pub map_set_id: String,
+    pub fly_position: Option<Coordinate>,
 
 }
 
 #[derive(Deserialize, Clone)]
 pub struct SerializedWildEntry {
 
+    #[serde(rename = "type")]
     pub encounter_type: String,
-    pub wild_tiles: Option<Vec<u16>>,
+    #[serde(default)]
+    pub tiles: Option<Vec<u16>>,
     
 }

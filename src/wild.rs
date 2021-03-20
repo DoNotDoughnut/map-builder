@@ -1,19 +1,15 @@
 use std::path::PathBuf;
 
-use firecore_world::wild::WildEntry;
-use firecore_world::wild::table::WildPokemonTable;
+use firecore_world::map::wild::{WildEntry, table::WildPokemonTable};
 
-pub fn load_wild_entry(root_path: &PathBuf, wild: Option<super::map_serializable::SerializedWildEntry>, map_index: Option<usize>) -> Option<WildEntry> {
-    wild.map(|toml_wild_entry| {
-        let mut wild_path = root_path.join("wild");
+use crate::map_serializable::SerializedWildEntry;
 
-        if let Some(map_index) = map_index {
-            wild_path = wild_path.join(String::from("map_") + &map_index.to_string());
-        }
+pub fn load_wild_entry(wild: Option<SerializedWildEntry>, wild_path: PathBuf) -> Option<WildEntry> {
+    wild.map(|serialized_wild_entry| {
 
         let file = wild_path.join("grass.toml");
 
-        let table = match toml_wild_entry.encounter_type.as_str() {
+        let table = match serialized_wild_entry.encounter_type.as_str() {
             "original" => {
                 match std::fs::read_to_string(&file) {
                     Ok(content) => {
@@ -36,7 +32,7 @@ pub fn load_wild_entry(root_path: &PathBuf, wild: Option<super::map_serializable
         };
 
         WildEntry {
-            tiles: toml_wild_entry.wild_tiles,
+            tiles: serialized_wild_entry.tiles,
             table: table,
         }
 

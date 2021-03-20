@@ -5,7 +5,7 @@ static OUTPUT: &str = "output/world.bin";
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let start = Instant::now();
-    world_builder::with_dirs("world/maps", "world/textures/tiles", "world/textures/npcs", OUTPUT)?;
+    world_builder::compile("world/maps", "world/textures", "world/npcs", OUTPUT)?;
     println!("Completed in {}ms!", start.elapsed().as_millis());
 
     match std::fs::read(OUTPUT) {
@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     println!("Successfully decoded serialized world!");
                     for palette in &world.palettes {
                         if palette.id == 0 {
-                            match std::fs::read("world/textures/tiles/Palette0B.png") {
+                            match std::fs::read("world/textures/Palette0B.png") {
                                 Ok(bytes) => {
                                     if palette.bottom.len() == bytes.len() {
                                         if palette.bottom == bytes {
