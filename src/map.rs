@@ -5,6 +5,7 @@ use crate::map_serializable::MapConfig;
 
 use ahash::AHashMap as HashMap;
 
+use firecore_world::map::Border;
 use firecore_world::map::WorldMap;
 use firecore_world::map::chunk::map::WorldChunkMap;
 use firecore_world::map::manager::WorldMapManager;
@@ -107,9 +108,12 @@ pub fn load_map_from_config<P: AsRef<Path>>(root_path: P, palette_sizes: &HashMa
             music: gba_map.music,
             width: gba_map.width,
             height: gba_map.height,
-            tile_map: gba_map.tile_map,
-            border_blocks: gba_map.border_blocks,
-            movement_map: gba_map.movement_map,
+            tiles: gba_map.tiles,
+            border: Border {
+                tiles: gba_map.borders.into(),
+                size: (gba_map.borders.len() as f32).sqrt() as u8,
+            },
+            movements: gba_map.movements,
             warps: crate::warp::load_warp_entries(root_path.join("warps"))?,
             wild: crate::wild::load_wild_entry(map_config.wild, root_path.join("wild")),
             npcs: crate::npc::load_npc_entries(root_path.join("npcs"))?,

@@ -1,21 +1,19 @@
+use std::ops::AddAssign;
 use std::path::PathBuf;
 
 use ahash::AHashMap as HashMap;
+use firecore_world::{MapSize, TileId, MovementId};
 use image::GenericImageView;
-// use crate::image::Image;
 
 pub struct GbaMap {
 	
-	pub bank: usize,
-	pub map: usize,
-	//pub name: String,
 	pub music: u8,
-	pub width: u16,
-	pub height: u16,
+	pub width: MapSize,
+	pub height: MapSize,
 	pub palettes: [u8; 2],
-	pub border_blocks: [u16; 4],
-	pub tile_map: Vec<u16>,
-	pub movement_map: Vec<u8>,
+	pub borders: [TileId; 4],
+	pub tiles: Vec<TileId>,
+	pub movements: Vec<MovementId>,
 	
 }
 
@@ -25,14 +23,14 @@ pub fn get_gba_map(file: Vec<u8>) -> GbaMap  {
 
 	let music = bytes[40];
 
-	let width = bytes[0] as u16; // 0 - 3 reserved
-	let height = bytes[4] as u16; // 4 - 7 reserved
+	let width = bytes[0] as usize; // 0 - 3 reserved
+	let height = bytes[4] as usize; // 4 - 7 reserved
 	
 	let palettes = [bytes[8], bytes[12]]; // 8 - 11 reserved & 12 - 15 reserved
 	
 	//let show_name_on_entering = bytes[49];
 	
-	let mut border_blocks: [u16; 4] = [0; 4];
+	let mut borders: [u16; 4] = [0; 4];
 	
 	for x in 0..4 {
 		
@@ -40,41 +38,37 @@ pub fn get_gba_map(file: Vec<u8>) -> GbaMap  {
 		
 		let tile_num = (bytes[location+1]%4) as u16 * 256 + bytes[location] as u16;
 		
-		border_blocks[x] = tile_num;
+		borders[x] = tile_num;
 		
 	}
+
+	let size = width * height;
 	
-	let size = width as usize * height as usize;
+	let mut tiles: Vec<TileId> = Vec::with_capacity(size);
+	let mut movements: Vec<MovementId> = Vec::with_capacity(size);
 	
-	let mut tile_map: Vec<u16> = Vec::with_capacity(size);
-	let mut movement_map: Vec<u8> = Vec::with_capacity(size);
+	for tile in 0..size {
+
+		let location = 60 + tile * 2;
+
+		let tile = (bytes[location+1]%4) as u16 * 256 + bytes[location] as u16;
 	
-	for x in 0..size {
+		let movement = (bytes[location+1]/4) as u8;
 		
-		let location = 60 + x * 2;
-		
-		let tile_num = (bytes[location+1]%4) as u16 * 256 + bytes[location] as u16;
-		
-		let move_num = (bytes[location+1]/4) as u8;
-		
-		tile_map.push(tile_num);
-		movement_map.push(move_num);
+		tiles.push(tile);
+		movements.push(movement);
 		
 	}
 
 	GbaMap {
 		
-		bank: 0,//bank,
-		map: 0, //map,
-		//name: String::from(name),
 		music: music,
-		width: width,
-		height: height,
+		width: width as MapSize,
+		height: height as MapSize,
 		palettes: palettes,
-		border_blocks: border_blocks,
-		tile_map: tile_map,
-		movement_map: movement_map,
-//		spawnpoint: _spawnpoint,
+		borders: borders,
+		tiles,
+		movements,
 		
 	}
 	
@@ -86,15 +80,15 @@ pub fn fix_tiles(gba_map: &mut GbaMap, palette_sizes: &HashMap<u8, u16>) {
 
 	let zero_size = *palette_sizes.get(&0).unwrap();
 	
-	for index in 0..gba_map.tile_map.len() {
-		if gba_map.tile_map[index] > zero_size {
-			gba_map.tile_map[index] += offset;
+	for tile in gba_map.tiles.iter_mut() {
+		if *tile > zero_size {
+			tile.add_assign(offset);
 		}
 	}
 
-	for index in 0..gba_map.border_blocks.len() {
-		if gba_map.border_blocks[index] > zero_size {
-			gba_map.border_blocks[index] += offset;
+	for index in 0..gba_map.borders.len() {
+		if gba_map.borders[index] > zero_size {
+			gba_map.borders[index] += offset;
 		}
 	}
 
@@ -105,15 +99,15 @@ pub fn fix_tiles(gba_map: &mut GbaMap, palette_sizes: &HashMap<u8, u16>) {
 			offset12 += *palette_sizes.get(&x).unwrap();
 		}
 
-		for index in 0..gba_map.tile_map.len() {
-			if gba_map.tile_map[index] < zero_size {
-				gba_map.tile_map[index] += offset12;
+		for tile in gba_map.tiles.iter_mut() {
+			if *tile < zero_size {
+				tile.add_assign(offset12);
 			}
 		}
 
-		for index in 0..gba_map.border_blocks.len() {
-			if gba_map.border_blocks[index] < zero_size {
-				gba_map.border_blocks[index] += offset12;
+		for index in 0..gba_map.borders.len() {
+			if gba_map.borders[index] < zero_size {
+				gba_map.borders[index] += offset12;
 			}
 		}
 	}
