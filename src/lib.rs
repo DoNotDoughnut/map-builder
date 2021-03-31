@@ -4,26 +4,15 @@ use std::path::Path;
 use firecore_world::map::manager::WorldMapManager;
 use firecore_world::map::warp::WarpEntry;
 
-mod chunk_map_loader;
-mod map_set_loader;
-mod map;
-mod npc;
-mod script;
-mod warp;
-mod wild;
-mod npc_type;
+mod world;
+mod gba_map;
 
-pub mod map_serializable;
-pub mod gba_map;
-// pub mod image;
+// pub type ResultT<T> = Result<T, Box<dyn std::error::Error>>;
 
-
-pub type ResultT<T> = Result<T, Box<dyn std::error::Error>>;
-
-pub fn compile(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output_file: &str) -> ResultT<()> {
+pub fn compile<P: AsRef<Path>>(maps: P, tile_textures: P, npc_types: P, output_file: P) {
 
     println!("Started loading maps and tile textures...");
-    let (manager, palettes) = map::load_maps(map_dir, tile_texture_dir)?;
+    let (manager, palettes) = world::map::load_maps(maps, tile_textures);
     println!("Finished loading maps and tile textures.");
 
     println!("Verifying maps and warps...");
@@ -46,15 +35,17 @@ pub fn compile(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output
     }
 
     println!("Loading NPC types...");
-    let npc_types = npc_type::load_npc_types(npc_type_dir)?;
+    let npc_types = world::npc::npc_type::load_npc_types(npc_types);
 
-    if let Some(parent) = Path::new(output_file).parent() {
+    let output_file = output_file.as_ref();
+
+    if let Some(parent) = output_file.parent() {
         if !parent.exists() {
-            std::fs::create_dir_all(parent)?;
+            std::fs::create_dir_all(parent).unwrap_or_else(|err| panic!("Could not create directories for output file with error {}", err));
         }
     }
     
-    let mut file = std::fs::File::create(output_file)?;
+    let mut file = std::fs::File::create(output_file).unwrap_or_else(|err| panic!("Could not create output file at {:?} with error {}", output_file, err));
 
     let data = firecore_world::serialized::SerializedWorld {
         manager,
@@ -63,11 +54,10 @@ pub fn compile(map_dir: &str, tile_texture_dir: &str, npc_type_dir: &str, output
     };
 
     println!("Saving data...");
-    let bytes = bincode::serialize(&data)?;
-    let bytes = file.write(&bytes)?;
+    let bytes = bincode::serialize(&data).unwrap_or_else(|err| panic!("Could not serialize output file with error {}", err));
+    let bytes = file.write(&bytes).unwrap_or_else(|err| panic!("Could not write to output file with error {}", err));
     println!("Wrote {} bytes to world file!", bytes);
-    
-    Ok(())
+
 }
 
 fn verify_warp(warp: &WarpEntry, map_name: &String, manager: &WorldMapManager) {

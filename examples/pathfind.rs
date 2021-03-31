@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let map = &world.manager.map_set_manager.map_sets.get(&map_set_name).unwrap().maps[3];
 
-    let start = Coordinate::new(0, 2).with_direction(Direction::Right);
+    let start = Coordinate::new(0, 2).position(Direction::Right);
     let end = Coordinate::new(0xC, 0x9);
 
     let now = Instant::now();
@@ -25,4 +25,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+
 }

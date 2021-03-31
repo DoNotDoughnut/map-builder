@@ -2,6 +2,13 @@ use serde::Deserialize;
 
 use firecore_util::Coordinate;
 
+pub mod map;
+
+pub mod wild;
+pub mod warp;
+pub mod npc;
+pub mod script;
+
 #[derive(Deserialize)]
 pub struct SerializedMap {
 

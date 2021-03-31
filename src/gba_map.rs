@@ -1,4 +1,5 @@
 use std::ops::AddAssign;
+use std::path::Path;
 use std::path::PathBuf;
 
 use ahash::AHashMap as HashMap;
@@ -126,11 +127,11 @@ pub fn get_offset(gba_map: &GbaMap, palette_sizes: &HashMap<u8, u16>) -> u16 { /
 	return offset;
 }
 
-pub fn fill_palette_map(tile_texture_dir: &str) -> (HashMap<u8, u16>, HashMap<u8, Vec<u8>>) {
+pub fn fill_palette_map<P: AsRef<Path>>(tile_textures: P) -> (HashMap<u8, u16>, HashMap<u8, Vec<u8>>) {
 	let mut sizes = HashMap::new();
 	let mut palettes = HashMap::new();
 
-	if let Ok(dir) = std::fs::read_dir(tile_texture_dir) {
+	if let Ok(dir) = std::fs::read_dir(tile_textures) {
 		let paths: Vec<PathBuf> = dir.filter(|entry| entry.is_ok()).map(|entry| entry.unwrap().path()).filter(|path| path.is_file()).collect();
 		for filepath in paths {
 			let filename = filepath.file_name().unwrap().to_string_lossy();

@@ -2,10 +2,10 @@ use std::time::Instant;
 
 static OUTPUT: &str = "output/world.bin";
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
 
     let start = Instant::now();
-    world_builder::compile("world/maps", "world/textures", "world/npcs", OUTPUT)?;
+    world_builder::compile("world/maps", "world/textures", "world/npcs", OUTPUT);
     println!("Completed in {}ms!", start.elapsed().as_millis());
 
     match std::fs::read(OUTPUT) {
@@ -43,5 +43,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("Could not read output file with error {}", err);
         }
     }
-    Ok(())
 }
