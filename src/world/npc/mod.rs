@@ -2,10 +2,11 @@ use std::path::PathBuf;
 use ahash::AHashMap as HashMap;
 
 use firecore_world::character::npc::NPC;
+use firecore_world::map::npc::NPCManager;
 
 pub mod npc_type;
 
-pub fn load_npc_entries(npc_path: PathBuf) -> HashMap<u8, NPC> {
+pub fn load_npc_entries(npc_path: PathBuf) -> NPCManager {
     let mut npcs = HashMap::new();
     if let Ok(dir) = std::fs::read_dir(npc_path) {
         for entry in dir {
@@ -24,5 +25,5 @@ pub fn load_npc_entries(npc_path: PathBuf) -> HashMap<u8, NPC> {
             }
         }
     } 
-    npcs
+    NPCManager::new(npcs)
 }

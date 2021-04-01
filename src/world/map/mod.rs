@@ -1,13 +1,25 @@
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use ahash::AHashMap as HashMap;
 
-use firecore_world::map::*;
-use firecore_world::map::chunk::map::WorldChunkMap;
-use firecore_world::map::manager::WorldMapManager;
-use firecore_world::map::set::manager::WorldMapSetManager;
-use firecore_world::serialized::Palette;
+use firecore_world::{
+    serialized::Palette,
+    map::{
+        WorldMap,
+        MapIdentifier,
+        Border,
+        manager::WorldMapManager,
+        chunk::{
+            WorldChunk,
+            map::WorldChunkMap,
+        },
+        set::{
+            WorldMapSet,
+            manager::WorldMapSetManager,
+        }
+    }
+};
+
 use crate::gba_map::{get_gba_map, fix_tiles, fill_palette_map};
 
 use super::MapConfig;
@@ -20,7 +32,7 @@ pub fn load_maps<P: AsRef<Path>>(maps: P, tile_textures: P) -> (WorldMapManager,
     let maps = maps.as_ref();
     let tile_textures = tile_textures.as_ref();
 
-    let mut chunk_map = WorldChunkMap::new();
+    let mut chunk_map = WorldChunkMap::default();
     let mut map_set_manager = WorldMapSetManager::default();
     let (palette_sizes, palettes) = fill_palette_map(tile_textures);
     println!("Loaded {} palettes", palette_sizes.len());
@@ -72,55 +84,76 @@ pub fn load_maps<P: AsRef<Path>>(maps: P, tile_textures: P) -> (WorldMapManager,
 
 }
 
-fn load_map(palette_sizes: &HashMap<u8, u16>, root_path: &PathBuf, file: &PathBuf) -> (Option<(u16, firecore_world::map::chunk::WorldChunk)>, Option<(String, firecore_world::map::set::WorldMapSet)>) {
+fn load_map(
+    palette_sizes: &HashMap<u8, u16>, 
+    root_path: &PathBuf, 
+    file: &PathBuf
+) -> (
+    Option<(MapIdentifier, WorldChunk)>, 
+    Option<(MapIdentifier, WorldMapSet)>
+) 
+    {
     
     println!("Loading map under: {:?}", root_path);
     
     let data = std::fs::read_to_string(file).unwrap_or_else(|err| panic!("Could not read map configuration file at {:?} to string with error {}", file, err));
-    let map_config: super::SerializedMap = ron::from_str(&data).unwrap_or_else(|err| panic!("Could not deserialize map configuration at {:?} with error {}", file, err));
-    if let Some(serialized_chunk) = map_config.chunk {
-        (
-            Some(
-                chunk::new_chunk_map(root_path, palette_sizes, serialized_chunk)
-            ), 
-            None
-        )
-    } else if let Some(serialized_map_set) = map_config.map_set {
-        (
-            None, 
-            Some(
-                set::load_map_set(root_path, palette_sizes, serialized_map_set)
+    
+    match ron::from_str(&data) {
+        Ok(serialized_chunk) => {
+            (
+                Some(
+                    chunk::new_chunk_map(root_path, palette_sizes, serialized_chunk)
+                ), 
+                None
             )
-        )
-    } else {
-        panic!("Map config at {:?} does not contain either a jigsaw map or a warp map.", &root_path);
+        }
+        Err(chunk_err) => {
+            match ron::from_str(&data) {
+                Ok(serialized_map_set) => {
+                    (
+                        None, 
+                        Some(
+                            set::load_map_set(root_path, palette_sizes, serialized_map_set)
+                        )
+                    )
+                }
+                Err(set_err) => {
+                    panic!(
+                        "Map config at {:?} does not contain either a jigsaw map or a warp map. 
+                        Chunk map error: {}, 
+                        Map set error: {}\n"
+                        , &root_path, chunk_err, set_err);
+                }
+            }
+        }
     }
 }
 
-pub fn load_map_from_config<P: AsRef<Path>>(root_path: P, palette_sizes: &HashMap<u8, u16>, map_config: MapConfig) -> WorldMap {
+pub fn load_map_from_config<P: AsRef<Path>>(root_path: P, palette_sizes: &HashMap<u8, u16>, config: MapConfig) -> (MapIdentifier, WorldMap) {
     let root_path = root_path.as_ref();
     // println!("Loading map: \"{}\"", map_config.name);
     let mut gba_map = get_gba_map(
-        std::fs::read(root_path.join(&map_config.file)).unwrap_or_else(|err| panic!("Could not get map file at {:?} with error {}", root_path, err))
+        std::fs::read(root_path.join(config.file)).unwrap_or_else(|err| panic!("Could not get map file at {:?} with error {}", root_path, err))
     );
     fix_tiles(&mut gba_map, palette_sizes);
 
-    WorldMap {
-        name: map_config.name,
-        music: gba_map.music,
-        width: gba_map.width,
-        height: gba_map.height,
-        tiles: gba_map.tiles,
-        border: Border {
-            tiles: gba_map.borders.into(),
-            size: (gba_map.borders.len() as f32).sqrt() as u8,
-        },
-        movements: gba_map.movements,
-        warps: super::warp::load_warp_entries(root_path.join("warps")),
-        wild: super::wild::load_wild_entry(map_config.wild, root_path.join("wild")),
-        npcs: super::npc::load_npc_entries(root_path.join("npcs")),
-        scripts: super::script::load_script_entries(root_path.join("scripts")),
-        npc_active: None,
-        npc_timer: default_npc_timer(),
-    }
+    (
+        config.identifier,
+        WorldMap {
+            name: config.name,
+            music: gba_map.music,
+            width: gba_map.width,
+            height: gba_map.height,
+            tiles: gba_map.tiles,
+            movements: gba_map.movements,
+            border: Border {
+                tiles: gba_map.borders.into(),
+                size: (gba_map.borders.len() as f32).sqrt() as u8,
+            },
+            warps: super::warp::load_warp_entries(root_path.join("warps")),
+            wild: super::wild::load_wild_entry(config.wild, root_path.join("wild")),
+            npc_manager: super::npc::load_npc_entries(root_path.join("npcs")),
+            scripts: super::script::load_script_entries(root_path.join("scripts")),
+        }
+    )
 }

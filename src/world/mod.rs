@@ -1,3 +1,5 @@
+use firecore_world::map::MapIdentifier;
+use firecore_world::map::chunk::Connections;
 use serde::Deserialize;
 
 use firecore_util::Coordinate;
@@ -10,16 +12,9 @@ pub mod npc;
 pub mod script;
 
 #[derive(Deserialize)]
-pub struct SerializedMap {
-
-    pub chunk: Option<SerializedChunkMap>,
-    pub map_set: Option<SerializedMapSet>,
-
-}
-
-#[derive(Deserialize)]
 pub struct MapConfig {
 
+    pub identifier: MapIdentifier,
     pub name: String,
     pub file: String,
 
@@ -29,21 +24,22 @@ pub struct MapConfig {
 
 }
 
+#[serde(deny_unknown_fields)]
 #[derive(Deserialize)]
 pub struct SerializedChunkMap {
 
     pub config: MapConfig,
 
-    pub piece_index: u16,
     pub coords: Coordinate,
-    pub connections: smallvec::SmallVec<[u16; 6]>,
+    pub connections: Connections,
 
 }
 
+#[serde(deny_unknown_fields)]
 #[derive(Deserialize)]
 pub struct SerializedMapSet {
 
-    pub identifier: String,
+    pub identifier: MapIdentifier,
     pub dirs: Vec<String>,
 
 }

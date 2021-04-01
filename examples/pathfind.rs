@@ -6,9 +6,10 @@ use firecore_util::Direction;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let world: firecore_world::serialized::SerializedWorld = bincode::deserialize(&std::fs::read("output/world.bin")?)?;
 
-    let map_set_name = String::from("pallet_houses");
+    let set = "pallet_houses".parse().unwrap();
+    let map = "oak_lab".parse().unwrap();
 
-    let map = &world.manager.map_set_manager.map_sets.get(&map_set_name).unwrap().maps[3];
+    let map = world.manager.map_set_manager.map_sets.get(&set).unwrap().maps.get(&map).unwrap();
 
     let start = Coordinate::new(0, 2).position(Direction::Right);
     let end = Coordinate::new(0xC, 0x9);

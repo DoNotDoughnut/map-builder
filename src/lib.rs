@@ -1,6 +1,7 @@
 use std::io::Write;
 use std::path::Path;
 
+use firecore_world::map::chunk::map::WorldChunkMap;
 use firecore_world::map::manager::WorldMapManager;
 use firecore_world::map::warp::WarpEntry;
 
@@ -16,23 +17,8 @@ pub fn compile<P: AsRef<Path>>(maps: P, tile_textures: P, npc_types: P, output_f
     println!("Finished loading maps and tile textures.");
 
     println!("Verifying maps and warps...");
-    for chunk in manager.chunk_map.chunks.values() {
-        for connection in chunk.connections.iter() {
-            if !manager.chunk_map.chunks.contains_key(connection) {
-                panic!("Map {} contains a connection to non-existent index {}", chunk.map.name, connection);
-            }
-        }
-        for warp in chunk.map.warps.iter() {
-            verify_warp(warp, &chunk.map.name, &manager);
-        }
-    }
-    for map_set in manager.map_set_manager.map_sets.values() {
-        for map in map_set.maps.iter() {
-            for warp in map.warps.iter() {
-                verify_warp(warp, &map.name, &manager);
-            }
-        }
-    }
+    verify_warps(&manager);
+    verify_connections(&manager.chunk_map);
 
     println!("Loading NPC types...");
     let npc_types = world::npc::npc_type::load_npc_types(npc_types);
@@ -60,16 +46,62 @@ pub fn compile<P: AsRef<Path>>(maps: P, tile_textures: P, npc_types: P, output_f
 
 }
 
-fn verify_warp(warp: &WarpEntry, map_name: &String, manager: &WorldMapManager) {
-    if warp.destination.map_id.as_str().eq("world") {
-        if !manager.chunk_map.chunks.contains_key(&warp.destination.map_index) {
-            panic!("Map {} contains a warp to non-existent chunk index {}", map_name, warp.destination.map_index);
+fn verify_warps(manager: &WorldMapManager) {
+    let mut errors: u32 = 0;
+    for chunk in manager.chunk_map.chunks.values() {
+        for connection in chunk.connections.iter() {
+            if !manager.chunk_map.chunks.contains_key(connection) {
+                panic!("Map {} contains a connection to non-existent index {}", chunk.map.name, connection);
+            }
         }
-    } else if let Some(map_set) = manager.map_set_manager.map_sets.get(&warp.destination.map_id) {
-        if map_set.maps.len() <= warp.destination.map_index as usize {
-            panic!("Map {} contains a warp to a non-existent map at index {} in map set {}", map_name, warp.destination.map_index, map_set.name);
+        for warp in chunk.map.warps.iter() {
+            errors += verify_warp(warp, &chunk.map.name, &manager);
         }
-    } else {
-        panic!("Map {} contains a warp to non-existent map set {}", map_name, warp.destination.map_id);
+    }
+    for map_set in manager.map_set_manager.map_sets.values() {
+        for map in map_set.maps.values() {
+            for warp in map.warps.iter() {
+                errors += verify_warp(warp, &map.name, &manager);
+            }
+        }
+    }
+    if errors != 0 {
+        panic!("Found {} errors in warp files.", errors);
+    }
+}
+
+fn verify_warp(warp: &WarpEntry, map_name: &String, manager: &WorldMapManager) -> u32 {
+    let mut errors: u32 = 0;
+    if warp.destination.map.is_none() {
+        if !manager.chunk_map.chunks.contains_key(&warp.destination.index) {
+            eprintln!("Map {} contains a warp to non-existent chunk index {}", map_name, warp.destination.index);
+            errors += 1;
+        }
+    } else if let Some(map) = warp.destination.map.as_ref()  {
+        if let Some(map_set) = manager.map_set_manager.map_sets.get(map) {
+            if !map_set.maps.contains_key(&warp.destination.index) {
+                eprintln!("Map {} contains a warp to a non-existent map at index {} in map set {}", map_name, warp.destination.index, map);
+                errors += 1;
+            }
+        } else {
+            eprintln!("Map {} contains a warp to non-existent map set {}", map_name, map);
+            errors += 1;
+        }
+    }
+    errors 
+}
+
+fn verify_connections(chunks: &WorldChunkMap) {
+    let mut errors: u32 = 0;
+    for chunk in chunks.chunks.values() {
+        for connection in chunk.connections.iter() {
+            if !chunks.chunks.contains_key(connection) {
+                eprintln!("Could not get connection \"{}\" for chunk {}", connection, chunk.map.name);
+                errors += 1;
+            }
+        }
+    }
+    if errors != 0 {
+        panic!("Found {} errors in chunk connections.", errors)
     }
 }

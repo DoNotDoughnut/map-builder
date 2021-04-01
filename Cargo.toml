@@ -1,6 +1,6 @@
 [package]
 name = "world-builder"
-version = "0.3.0-beta.5"
+version = "0.3.0-beta.6"
 authors = ["Rhys Holloway <rhyswilliamholloway@gmail.com>"]
 edition = "2018"
 
@@ -8,26 +8,28 @@ edition = "2018"
 
 [dependencies]
 
-# Map specifications
+### Map specifications
 
 firecore-world = { git = "https://github.com/DoNotDoughnut/firecore-world" }
 #firecore-world = { path = "../../firecore/firecore-world" }
 
-# Serialization
+firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
+#firecore-util = { path = "../../firecore/firecore-util" }
+
+### Serialization
 
 serde = { version = "1.0", features = ["derive"] }
 bincode = "1.3"
 toml = "0.5"
 ron = "0.6"
 
-# Other
-
-firecore-util = { git = "https://github.com/DoNotDoughnut/firecore-util" }
-#firecore-util = { path = "../../firecore/firecore-util" }
+### Collections
 
 ahash = { version = "0.7", features = ["serde"] }
+
+### Other
+
 image = { version = "0.23.12", default-features = false, features = ["png", "tga"] }
-smallvec = { version = "1.6", features = ["serde"] }
 
 [dev-dependencies]
 firecore-world = { git = "https://github.com/DoNotDoughnut/firecore-world", features = ["pathfind"] }
