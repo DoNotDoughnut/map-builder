@@ -10,7 +10,7 @@ fn main() {
 
     match std::fs::read(OUTPUT) {
         Ok(bytes) => {
-            let result: Result<firecore_world::serialized::SerializedWorld, bincode::Error> = bincode::deserialize(&bytes);
+            let result: Result<firecore_world::serialized::SerializedWorld, postcard::Error> = postcard::from_bytes(&bytes);
             match result {
                 Ok(world) => {
                     println!("Successfully decoded serialized world!");

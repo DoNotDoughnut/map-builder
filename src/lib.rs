@@ -40,7 +40,7 @@ pub fn compile<P: AsRef<Path>>(maps: P, tile_textures: P, npc_types: P, output_f
     };
 
     println!("Saving data...");
-    let bytes = bincode::serialize(&data).unwrap_or_else(|err| panic!("Could not serialize output file with error {}", err));
+    let bytes = postcard::to_allocvec(&data).unwrap_or_else(|err| panic!("Could not serialize output file with error {}", err));
     let bytes = file.write(&bytes).unwrap_or_else(|err| panic!("Could not write to output file with error {}", err));
     println!("Wrote {} bytes to world file!", bytes);
 
