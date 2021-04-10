@@ -1,4 +1,5 @@
 use std::time::Instant;
+use firecore_world_lib::serialized::SerializedWorld;
 
 static OUTPUT: &str = "output/world.bin";
 
@@ -10,7 +11,7 @@ fn main() {
 
     match std::fs::read(OUTPUT) {
         Ok(bytes) => {
-            let result: Result<firecore_world::serialized::SerializedWorld, postcard::Error> = postcard::from_bytes(&bytes);
+            let result: Result<SerializedWorld, postcard::Error> = postcard::from_bytes(&bytes);
             match result {
                 Ok(world) => {
                     println!("Successfully decoded serialized world!");

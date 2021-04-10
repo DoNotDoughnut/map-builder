@@ -1,9 +1,11 @@
+extern crate firecore_world_lib;
+
 use std::io::Write;
 use std::path::Path;
 
-use firecore_world::map::chunk::map::WorldChunkMap;
-use firecore_world::map::manager::WorldMapManager;
-use firecore_world::map::warp::WarpEntry;
+use firecore_world_lib::map::chunk::map::WorldChunkMap;
+use firecore_world_lib::map::manager::WorldMapManager;
+use firecore_world_lib::map::warp::WarpEntry;
 
 mod world;
 mod gba_map;
@@ -33,7 +35,7 @@ pub fn compile<P: AsRef<Path>>(maps: P, tile_textures: P, npc_types: P, output_f
     
     let mut file = std::fs::File::create(output_file).unwrap_or_else(|err| panic!("Could not create output file at {:?} with error {}", output_file, err));
 
-    let data = firecore_world::serialized::SerializedWorld {
+    let data = firecore_world_lib::serialized::SerializedWorld {
         manager,
         npc_types,
         palettes,

@@ -1,5 +1,5 @@
-use firecore_world::map::MapIdentifier;
-use firecore_world::map::chunk::Connections;
+use firecore_world_lib::map::MapIdentifier;
+use firecore_world_lib::map::chunk::Connections;
 use serde::Deserialize;
 
 use firecore_util::Coordinate;

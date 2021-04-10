@@ -4,7 +4,7 @@ use firecore_util::Coordinate;
 use firecore_util::Direction;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let world: firecore_world::serialized::SerializedWorld = bincode::deserialize(&std::fs::read("output/world.bin")?)?;
+    let world: firecore_world_lib::serialized::SerializedWorld = postcard::from_bytes(&std::fs::read("output/world.bin")?)?;
 
     let set = "pallet_houses".parse().unwrap();
     let map = "oak_lab".parse().unwrap();
@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let now = Instant::now();
 
-    if let Some(path) = firecore_world::character::movement::astar::pathfind(start, end, map) {
+    if let Some(path) = firecore_world_lib::character::movement::astar::pathfind(start, end, map) {
         println!("Found path in {} microseconds", now.elapsed().as_micros());
         for coordinate in path {
             println!("{:?}", coordinate);

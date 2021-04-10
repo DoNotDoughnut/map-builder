@@ -3,7 +3,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use ahash::AHashMap as HashMap;
-use firecore_world::{MapSize, TileId, MovementId};
+use firecore_world_lib::{MapSize, TileId, MovementId};
 use image::GenericImageView;
 
 pub struct GbaMap {

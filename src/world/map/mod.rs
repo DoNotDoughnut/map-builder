@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use ahash::AHashMap as HashMap;
 
-use firecore_world::{
+use firecore_world_lib::{
     serialized::Palette,
     map::{
         WorldMap,

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use firecore_world::map::MapIdentifier;
-use firecore_world::map::set::WorldMapSet;
+use firecore_world_lib::map::MapIdentifier;
+use firecore_world_lib::map::set::WorldMapSet;
 use ahash::AHashMap as HashMap;
 use crate::world::{SerializedMapSet, MapConfig};
 
