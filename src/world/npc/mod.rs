@@ -16,7 +16,7 @@ pub fn load_npc_entries(npc_path: PathBuf) -> NPCManager {
                 let npc_result: Result<SerializedNPC, ron::Error> = ron::from_str(&data);
                 match npc_result {
                     Ok(npc) => {
-                        npcs.insert(npc.id, npc.npc);
+                        npcs.insert(npc.index, npc.npc);
                     },
                     Err(err) => {
                         panic!("Could not parse NPC at {:?} with error {} at position {}", file, err, err.position);
